@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Análisis admisiones SuperLeads</title>
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="SuperLeads" />
+    <meta property="og:title" content="Análisis admisiones SuperLeads" />
+    <meta property="og:description" content="Tablero para decisiones de inscripciones con evidencia operativa." />
+    <meta property="og:image" content="https://assets.cdn.filesafe.space/E6Gh1sE1RnPtadmL7wmG/media/698e530bc08665d629146a14.png" />
+    <meta property="og:image:secure_url" content="https://assets.cdn.filesafe.space/E6Gh1sE1RnPtadmL7wmG/media/698e530bc08665d629146a14.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Análisis admisiones SuperLeads" />
+    <meta name="twitter:description" content="Tablero para decisiones de inscripciones con evidencia operativa." />
+    <meta name="twitter:image" content="https://assets.cdn.filesafe.space/E6Gh1sE1RnPtadmL7wmG/media/698e530bc08665d629146a14.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="https://assets.cdn.filesafe.space/E6Gh1sE1RnPtadmL7wmG/media/68bdf4dd6d0aaa7737d9cfdd.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="https://assets.cdn.filesafe.space/E6Gh1sE1RnPtadmL7wmG/media/68bdf4dd6d0aaa7737d9cfdd.png" />
+    <link rel="shortcut icon" href="https://assets.cdn.filesafe.space/E6Gh1sE1RnPtadmL7wmG/media/68bdf4dd6d0aaa7737d9cfdd.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="https://assets.cdn.filesafe.space/E6Gh1sE1RnPtadmL7wmG/media/68bdf4dd6d0aaa7737d9cfdd.png" />
+    <meta name="theme-color" content="#001240" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script defer src="./app.js"></script>
+  </head>
+  <body>
+    <main id="sladm-root" class="container">
+      <header class="hero">
+        <a class="hero-logo-link" href="https://superleads.mx" aria-label="Ir a SuperLeads.mx">
+          <img class="hero-logo" src="https://assets.cdn.filesafe.space/E6Gh1sE1RnPtadmL7wmG/media/698e530bc08665d629146a14.png" alt="SuperLeads" />
+        </a>
+        <div class="hero-top">
+          <h1 id="dashboard-title">Análisis admisiones SuperLeads</h1>
+        </div>
+        <div id="institution-hero-box" class="institution-hero-box" hidden></div>
+        <p id="hero-subtitle">Cada decisión parte de evidencia, no de opinión. Carga tu archivo y obtén claridad del proceso de inscripciones.</p>
+      </header>
+
+      <section class="setup-card" id="setup-card">
+        <div class="control">
+          <label for="institution-name">Nombre de la institución</label>
+          <input id="institution-name" type="text" placeholder="Ejemplo: Colegio Nuevo Continente" />
+        </div>
+        <button id="btn-main-action" type="button">Guardar nombre</button>
+      </section>
+
+      <section id="drop-zone" class="drop-zone is-disabled" aria-label="Carga de archivo CSV de oportunidades" tabindex="0">
+        <input id="csv-file" class="csv-file-input" type="file" accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" />
+        <div class="drop-zone-icon" aria-hidden="true">CSV</div>
+        <p class="drop-zone-title"><strong>Sube el CSV de oportunidades</strong></p>
+        <p class="drop-zone-copy">Arrastra y suelta tu archivo o haz clic para seleccionarlo.</p>
+        <button id="btn-pick-csv" type="button" class="btn-pick-csv">Seleccionar archivo CSV</button>
+      </section>
+
+      <section id="analysis-sequence" class="analysis-sequence" hidden aria-live="polite" aria-atomic="true">
+        <div class="analysis-sequence-head">
+          <h2 id="analysis-title">Analizando datos</h2>
+          <p id="analysis-message">Estamos validando la estructura del archivo CSV.</p>
+        </div>
+        <div class="analysis-progress">
+          <span id="analysis-progress-bar"></span>
+        </div>
+        <ul class="analysis-steps" id="analysis-steps">
+          <li id="analysis-step-1">1. Analizando los datos</li>
+          <li id="analysis-step-2">2. Acomodando la información</li>
+          <li id="analysis-step-3">3. Graficando indicadores</li>
+          <li id="analysis-step-4">4. Detallando hallazgos</li>
+          <li id="analysis-step-5">5. Exponiendo resultados</li>
+        </ul>
+      </section>
+
+      <section class="controls" id="controls" hidden>
+        <div class="control">
+          <label for="filter-assigned">Asesor</label>
+          <select id="filter-assigned"></select>
+        </div>
+        <div class="control">
+          <label for="filter-phase">Fase</label>
+          <select id="filter-phase"></select>
+        </div>
+        <div class="control">
+          <label for="filter-level">Nivel educativo</label>
+          <select id="filter-level"></select>
+        </div>
+        <div class="control">
+          <label for="filter-time">Tiempo</label>
+          <select id="filter-time"></select>
+        </div>
+        <div id="time-custom-range" class="time-custom-range" hidden>
+          <div class="control">
+            <label for="filter-date-from">De</label>
+            <input id="filter-date-from" type="date" />
+          </div>
+          <div class="control">
+            <label for="filter-date-to">A</label>
+            <input id="filter-date-to" type="date" />
+          </div>
+        </div>
+        <div class="control-actions">
+          <button id="btn-reset" type="button">Limpiar filtros</button>
+          <button id="btn-export-csv" type="button">Descargar CSV</button>
+          <button id="btn-export-report" type="button">Descargar imagen</button>
+          <button id="btn-export-pdf" type="button">Descargar PDF</button>
+        </div>
+      </section>
+
+      <section class="kpi-grid" id="kpi-grid"></section>
+
+      <section class="insights" id="insights"></section>
+
+      <section class="charts-grid" id="charts" hidden>
+        <article class="chart-card chart-critical">
+          <header class="chart-head"><h3>1. Embudo de admisiones</h3><p>Personas por etapa y porcentaje sobre el total filtrado.</p></header>
+          <div id="chart-funnel" class="chart"></div>
+        </article>
+        <article class="chart-card chart-critical">
+          <header class="chart-head"><h3>2. Captación de leads en admisiones</h3><p>Evolución diaria de nuevas oportunidades.</p></header>
+          <div id="chart-created-trend" class="chart"></div>
+        </article>
+        <article class="chart-card chart-critical chart-full">
+          <header class="chart-head"><h3>3. Ganados (Nuevos Alumnos)</h3><p>Usa Ganado/Inscrito; si no existen, usa Aceptado como sustituto.</p></header>
+          <div id="chart-won-students" class="chart"></div>
+        </article>
+        <article class="chart-card">
+          <header class="chart-head"><h3>4. Distribución por fase</h3><p>Composición actual del pipeline.</p></header>
+          <div id="chart-phase" class="chart"></div>
+        </article>
+        <article class="chart-card">
+          <header class="chart-head"><h3>5. Volumen por fuente</h3><p>Qué canales están trayendo más prospectos.</p></header>
+          <div id="chart-source" class="chart"></div>
+        </article>
+        <article class="chart-card chart-critical">
+          <header class="chart-head"><h3>6. Conversión a cita por fuente</h3><p>Calidad de cada canal para generar avance real.</p></header>
+          <div id="chart-source-conversion" class="chart"></div>
+        </article>
+        <article class="chart-card">
+          <header class="chart-head"><h3>7. Carga por asesor</h3><p>Balance operativo del equipo comercial.</p></header>
+          <div id="chart-assigned" class="chart"></div>
+        </article>
+        <article class="chart-card">
+          <header class="chart-head"><h3>8. Nivel y grado de interés</h3><p>Demanda académica dominante.</p></header>
+          <div id="chart-level-grade" class="chart"></div>
+        </article>
+        <article class="chart-card">
+          <header class="chart-head"><h3>9. Seguimiento por fase</h3><p>Tiempo sin actualización por etapa.</p></header>
+          <div id="chart-box-days" class="chart"></div>
+        </article>
+        <article class="chart-card">
+          <header class="chart-head"><h3>10. Horarios de alta</h3><p>Momentos de mayor entrada de interesados.</p></header>
+          <div id="chart-heatmap" class="chart"></div>
+        </article>
+        <article class="chart-card">
+          <header class="chart-head"><h3>11. Día de alta</h3><p>Concentración de altas por día del mes.</p></header>
+          <div id="chart-heatmap-day" class="chart"></div>
+        </article>
+        <article class="chart-card">
+          <header class="chart-head"><h3>12. Mes de alta</h3><p>Concentración de altas por mes y año.</p></header>
+          <div id="chart-heatmap-month" class="chart"></div>
+        </article>
+        <article class="chart-card">
+          <header class="chart-head"><h3>13. Distribución de edades</h3><p>Perfil etario del aspirante.</p></header>
+          <div id="chart-age" class="chart"></div>
+        </article>
+      </section>
+
+      <section class="table-wrap" id="table-wrap" hidden>
+        <div class="table-head">
+          <h2>Detalle de registros (muestra de 10)</h2>
+          <button id="btn-toggle-table" type="button">Ver detalle</button>
+        </div>
+        <div class="table-scroll" id="table-scroll" hidden>
+          <table id="data-table"></table>
+        </div>
+        <div class="table-pagination" id="table-pagination" hidden>
+          <button id="btn-page-prev" type="button">Anterior</button>
+          <span id="table-page-info"></span>
+          <button id="btn-page-next" type="button">Siguiente</button>
+        </div>
+      </section>
+
+      <section class="records-wrap" id="records-wrap" hidden>
+        <div class="records-head">
+          <h2>Récords de inscritos</h2>
+          <p>Máximos históricos por periodo y fecha exacta del récord.</p>
+        </div>
+        <div class="records-grid" id="records-grid"></div>
+      </section>
+
+      <footer class="sl-footer">
+        <a class="sl-footer-logo-link" href="https://superleads.mx" aria-label="Ir a SuperLeads.mx">
+          <img
+            class="sl-footer-logo"
+            src="https://assets.cdn.filesafe.space/E6Gh1sE1RnPtadmL7wmG/media/698e530bc08665d629146a14.png"
+            alt="SuperLeads"
+          />
+        </a>
+        <p class="sl-footer-purpose">
+          Propósito: Darle poder a las Instituciones Educativas para que inscriban fácilmente a millones de estudiantes.
+        </p>
+      </footer>
+    </main>
+  </body>
+</html>
